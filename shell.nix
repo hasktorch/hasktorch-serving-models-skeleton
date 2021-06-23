@@ -17,7 +17,7 @@ let
   # This provides a development environment that can be used with nix-shell or
   # lorri. See https://input-output-hk.github.io/haskell.nix/user-guide/development/
   shell = hasktorchSkeletonHaskellPackages.shellFor {
-    name = "hasktorch-skeleton-dev-shell";
+    name = "serving-dev-shell";
 
     tools = {
       cabal = "3.2.0.0";

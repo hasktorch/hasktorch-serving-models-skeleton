@@ -29,7 +29,7 @@ let
   stack-shell = haskell.lib.buildStackProject rec {
     inherit ghc;
 
-    name = "hasktorch-skeleton-stack-dev-shell";
+    name = "serving-stack-dev-shell";
     
     extraArgs = [
       "--extra-include-dirs=${torch}/include/torch/csrc/api/include"

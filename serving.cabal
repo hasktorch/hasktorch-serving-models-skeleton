@@ -1,5 +1,5 @@
 cabal-version:       2.2
-name:                hasktorch-skeleton
+name:                serving
 version:             0.0.0.0
 synopsis:            See README for more info
 description:         See README for more info
@@ -20,11 +20,14 @@ common base
   build-depends:
       base >= 4.12 && < 5
     , hasktorch >= 0.2 && < 0.3
+    , servant-server
+    , aeson
+    , warp
 
 common binary-base
   import: base
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends: hasktorch-skeleton
+  build-depends: serving
 
 library
   import: base

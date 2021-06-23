@@ -15,7 +15,7 @@
 let
 
   src = haskell-nix.haskellLib.cleanGit {
-      name = "hasktorch-skeleton";
+      name = "serving";
       src = ../.;
   };
 

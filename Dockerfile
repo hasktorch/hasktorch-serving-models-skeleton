@@ -1,0 +1,7 @@
+FROM ubuntu:20.04
+RUN apt-get update -qq && apt-get -y install ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN bash -c "echo deb [trusted=yes] https://github.com/hasktorch/libtorch-binary-for-ci/releases/download/apt ./ > /etc/apt/sources.list.d/libtorch.list"
+
+RUN apt-get update -qq && apt-get install -y libtorch=1.8.1+cpu-1 && rm -rf /var/lib/apt/lists/*
+COPY ./dist-newstyle/build/x86_64-linux/ghc-8.10.4/serving-0.0.0.0/x/example/build/example/example /usr/local/bin
+CMD /usr/local/bin/example
