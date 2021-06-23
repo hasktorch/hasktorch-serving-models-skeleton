@@ -10,6 +10,7 @@ import Data.Aeson (FromJSON, ToJSON)
 import GHC.Generics (Generic)
 import Servant
 import Torch 
+import System.Environment
 
 data Result = Result {
   msg :: String, 
@@ -41,6 +42,12 @@ app = serve torchApi server
 
 main :: IO ()
 main = do
-  putStrLn $ "Running server on port " ++ show port
-  run port app
+  args <- getArgs
+  case args of
+    [] -> do
+      putStrLn $ "Running server on port " ++ show port
+      run port app
+    port:_ -> do
+      putStrLn $ "Running server on port " ++ port
+      run (read port) app
   where port = 8081
