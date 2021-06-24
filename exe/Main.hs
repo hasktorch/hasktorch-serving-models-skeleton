@@ -50,11 +50,10 @@ main = do
         Just port -> do
           putStrLn $ "Running server on port " ++ port
           run (read port) app
-        Nothing ->
+        Nothing -> do
           let port = 8081
           putStrLn $ "Running server on port " ++ show port
           run port app
-          
     port:_ -> do
       putStrLn $ "Running server on port " ++ port
       run (read port) app
