@@ -45,9 +45,16 @@ main = do
   args <- getArgs
   case args of
     [] -> do
-      putStrLn $ "Running server on port " ++ show port
-      run port app
+      mport <- lookupEnv "PORT"
+      case mport of
+        Just port -> do
+          putStrLn $ "Running server on port " ++ port
+          run (read port) app
+        Nothing ->
+          let port = 8081
+          putStrLn $ "Running server on port " ++ show port
+          run port app
+          
     port:_ -> do
       putStrLn $ "Running server on port " ++ port
       run (read port) app
-  where port = 8081
