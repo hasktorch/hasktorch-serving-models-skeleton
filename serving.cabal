@@ -21,8 +21,13 @@ common base
       base >= 4.12 && < 5
     , hasktorch >= 0.2 && < 0.3
     , servant-server
+    , servant-multipart
+    , servant-JuicyPixels
+    , JuicyPixels
     , aeson
     , warp
+    , bytestring
+    , text
 
 common binary-base
   import: base
