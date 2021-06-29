@@ -23,6 +23,7 @@ import Text.Read (readMaybe)
 
 import Torch 
 import Torch.Vision
+import Torch.Script
 import System.Environment
 
 data Result = Result
@@ -48,8 +49,11 @@ type HelloTorchAPI = "compute2x" :> Capture "value" Float :> Get '[JSON] [Result
 
 type BoundingBoxAPI = "boundingbox" :> MultipartForm Mem (MultipartData Mem) :> Post '[JPEG 50] DynamicImage
 
+type Yolov5API = "yolov5" :> MultipartForm Mem (MultipartData Mem) :> Post '[JPEG 50] DynamicImage
+
 type API = HelloTorchAPI
       :<|> BoundingBoxAPI
+      :<|> Yolov5API
 
 helloTorch :: MonadIO m => Float -> m [Result] 
 helloTorch value = pure $ 
@@ -65,7 +69,6 @@ toLabels str = do
         map BLC.unpack $
         BL.split (fromIntegral $ fromEnum '\n') str
   return $ Labels ssv
-
 
 toBoundingBox :: BL.ByteString -> Handler BoundingBox
 toBoundingBox str = do
@@ -101,7 +104,6 @@ drawBoundingBox img (Labels labels) (BoundingBox bbox) = do
       drawString (labels !! cid) (round x0+1) (round y0+1) (255,255,255) (0,0,0) input_image
       drawRect (round x0) (round y0) (round x1) (round y1) (255,255,255) input_image
   
-
 imageTorch :: MultipartData Mem -> Handler DynamicImage
 imageTorch multipartData = do
   img <-
@@ -140,11 +142,32 @@ imageTorch multipartData = do
 
   return $ ImageRGB8 input_image
 
+yolov5Torch :: MultipartData Mem -> Handler DynamicImage
+yolov5Torch multipartData = do
+  img <-
+    case lookupFile "image" multipartData of
+      Right file -> do
+        case decodeImage (toStrict $ fdPayload file) of
+           Right img -> return img
+           Left err -> throwError $ err404 { errBody = fromStrict $ encodeUtf8 $ T.pack $ show err}
+      Left err -> throwError $ err404 { errBody = fromStrict $ encodeUtf8 $ T.pack $ show err}
+  tsModule <- liftIO $ Torch.Script.loadScript WithoutRequiredGrad "yolov5s.pt"
+  
+  -- perform inference computation
+  let img' = fromDynImage $ ImageRGB8 $ resizeRGB8 640 480 True $ convertRGB8 img
+      input = hwc2chw $ toType Float img'
+
+  liftIO $ print $ shape input
+  let result' = Torch.forward tsModule [IVTensor input]
+  liftIO $ print result'
+
+  return img
+
 torchApi :: Proxy API
 torchApi = Proxy
 
 server :: Server API
-server = helloTorch :<|> imageTorch
+server = helloTorch :<|> imageTorch :<|> yolov5Torch
 
 app :: Application
 app = serve torchApi server

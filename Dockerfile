@@ -5,6 +5,7 @@ RUN bash -c "echo deb [trusted=yes] https://github.com/hasktorch/libtorch-binary
 RUN apt-get update -qq && apt-get install -y libtorch=1.8.1+cpu-1 && rm -rf /var/lib/apt/lists/*
 RUN apt-get update -qq && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 #COPY ./dist-newstyle/build/x86_64-linux/ghc-8.10.4/serving-0.0.0.0/x/example/build/example/example /usr/local/bin
-RUN curl -L -o /usr/local/bin/example https://github.com/hasktorch/hasktorch-serving-models-skeleton/releases/download/0.1/example 
+RUN curl -L -o yolov5s.pt https://github.com/hasktorch/hasktorch-serving-models-skeleton/releases/download/0.1/yolov5s.pt
+RUN curl -L -o /usr/local/bin/example https://github.com/hasktorch/hasktorch-serving-models-skeleton/releases/download/0.1/example
 RUN chmod +x /usr/local/bin/example
 CMD /usr/local/bin/example
