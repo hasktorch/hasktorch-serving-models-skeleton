@@ -9,6 +9,7 @@ https://github.com/hasktorch/hasktorch/tree/master/examples/model-serving
 The following command works on heroku. The first time is slow, because it stops every 30 minutes.
 
 ```
+# Calculate a formula
 $ curl -s https://hasktorch-serving-models.herokuapp.com/compute2x/3 | jq .
 [
   {
@@ -19,6 +20,7 @@ $ curl -s https://hasktorch-serving-models.herokuapp.com/compute2x/3 | jq .
   }
 ]
 
+# Upload an image and an annotation file, then download an annotated image. 
 $ curl -o output.jpg -F image="@street.jpg" -F labels="@bdd100k.names" -F bbox="@street.txt" http://hasktorch-serving-models.herokuapp.com/boundingbox
 ```
 
