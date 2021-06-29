@@ -18,6 +18,8 @@ $ curl -s https://hasktorch-serving-models.herokuapp.com/compute2x/3 | jq .
     "msg": "f(x) = 2.0 * x is 6.0 for x = 3.0"
   }
 ]
+
+$ curl -o output.jpg -F image="@street.jpg" -F labels="@bdd100k.names" -F bbox="@street.txt" http://hasktorch-serving-models.herokuapp.com/boundingbox
 ```
 
 # Setup
