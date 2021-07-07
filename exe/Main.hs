@@ -2,6 +2,10 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 module Main where
 
@@ -21,10 +25,13 @@ import Data.Text.Encoding (encodeUtf8)
 import qualified Data.Text as T
 import Text.Read (readMaybe)
 
-import Torch 
+import Torch hiding (trace)
 import Torch.Vision
-import Torch.Script
+import Torch.Script hiding (trace)
+import qualified Torch.Functional.Internal as I
 import System.Environment
+import Debug.Trace
+import Lib
 
 data Result = Result
   { msg :: String
@@ -142,6 +149,91 @@ imageTorch multipartData = do
 
   return $ ImageRGB8 input_image
 
+
+cocoLabels :: [String]
+cocoLabels =
+  [ "person",
+    "bicycle",
+    "car",
+    "motorbike",
+    "aeroplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic light",
+    "fire hydrant",
+    "stop sign",
+    "parking meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports ball",
+    "kite",
+    "baseball bat",
+    "baseball glove",
+    "skateboard",
+    "surfboard",
+    "tennis racket",
+    "bottle",
+    "wine glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "sofa",
+    "pottedplant",
+    "bed",
+    "diningtable",
+    "toilet",
+    "tvmonitor",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy bear",
+    "hair drier",
+    "toothbrush"
+  ]
+
 yolov5Torch :: MultipartData Mem -> Handler DynamicImage
 yolov5Torch multipartData = do
   img <-
@@ -151,17 +243,26 @@ yolov5Torch multipartData = do
            Right img -> return img
            Left err -> throwError $ err404 { errBody = fromStrict $ encodeUtf8 $ T.pack $ show err}
       Left err -> throwError $ err404 { errBody = fromStrict $ encodeUtf8 $ T.pack $ show err}
-  tsModule <- liftIO $ Torch.Script.loadScript WithoutRequiredGrad "yolov5s.pt"
+  tsModule <- liftIO $ Torch.Script.loadScript WithoutRequiredGrad "yolov5s.torchscript.pt"
   
   -- perform inference computation
-  let img' = fromDynImage $ ImageRGB8 $ resizeRGB8 640 480 True $ convertRGB8 img
-      input = hwc2chw $ toType Float img'
+  let input_image = resizeRGB8 640 640 True $ convertRGB8 img
+      input = hwc2chw $ toType Float $ fromDynImage $ ImageRGB8 input_image
 
   liftIO $ print $ shape input
-  let result' = Torch.forward tsModule [IVTensor input]
-  liftIO $ print result'
-
-  return img
+  --let IVTuple (IVTensor result': _) = Torch.forward tsModule [IVTensor input]
+  let r = Torch.forward tsModule [IVTensor input]
+  liftIO $ print r
+  let IVTensor result' = Torch.forward tsModule [IVTensor input]
+  liftIO $ print $ shape result'
+  -- liftIO $ print $ map shape v
+  let outputs = nonMaxSuppression result' 0.25 0.45
+  forM_ (zip [0 ..] outputs) $ \(i, output) -> do
+    let a@[x0, y0, x1, y1, object_confidence, class_confidence, classid, ids] = map truncate (asValue output :: [Float])
+    liftIO $ drawString (show i ++ " " ++ cocoLabels !! classid) (x0 + 1) (y0 + 1) (255, 255, 255) (0, 0, 0) input_image
+    liftIO $ drawRect x0 y0 x1 y1 (255, 255, 255) input_image
+  
+  return $ ImageRGB8 input_image
 
 torchApi :: Proxy API
 torchApi = Proxy
@@ -183,3 +284,4 @@ main = do
       let port = 8081
       putStrLn $ "Running server on port " ++ show port
       run port app
+

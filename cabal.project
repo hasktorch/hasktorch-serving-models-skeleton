@@ -4,19 +4,19 @@ packages:
 source-repository-package
     type: git
     location: https://github.com/hasktorch/hasktorch
-    tag: b38ba2dd339a17951cdfcb57e656d96cd930e2ea
+    tag: acaf48876d9e77caeb3ca04e492d89f9db347a58
     subdir: libtorch-ffi-helper
 
 source-repository-package
     type: git
     location: https://github.com/hasktorch/hasktorch
-    tag: b38ba2dd339a17951cdfcb57e656d96cd930e2ea
+    tag: acaf48876d9e77caeb3ca04e492d89f9db347a58
     subdir: libtorch-ffi
 
 source-repository-package
     type: git
     location: https://github.com/hasktorch/hasktorch
-    tag: b38ba2dd339a17951cdfcb57e656d96cd930e2ea
+    tag: acaf48876d9e77caeb3ca04e492d89f9db347a58
     subdir: hasktorch
 
 source-repository-package

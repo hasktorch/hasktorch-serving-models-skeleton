@@ -1,11 +1,17 @@
-module Lib
-       ( nonMaxSuppression
-       ) where
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# OPTIONS_GHC -fno-warn-type-defaults #-}
+
+module Lib where
 
 import Torch hiding (trace)
-import Torch.Vision
-import Torch.Script hiding (trace)
 import qualified Torch.Functional.Internal as I
+import Debug.Trace
 
 bboxIou ::
   Tensor ->

@@ -28,6 +28,7 @@ common base
     , warp
     , bytestring
     , text
+    , template-haskell
 
 common binary-base
   import: base
@@ -37,7 +38,9 @@ common binary-base
 library
   import: base
   exposed-modules:
-    HasktorchSkeleton
+    Lib
+    TestUtil
+    Test
   hs-source-dirs: src
 
 executable example
